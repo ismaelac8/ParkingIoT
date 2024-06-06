@@ -3,6 +3,8 @@
 ### Descripción
 Este proyecto consiste en una aplicación web para gestionar el estado de un estacionamiento (Parking) utilizando tecnología IoT. La aplicación permite visualizar las plazas de estacionamiento disponibles, ocupadas y reservadas en tiempo real, a través de una interfaz web interactiva.
 
+Project demo: https://youtu.be/p5YcRXqU0gI
+
 ### Archivos del Proyecto
 1. `Proyecto_Final_PSS_IAC_lv.ino`
 2. `Web_Parking_IoT.html`
