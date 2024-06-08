@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('parking_background.jpg');
+            background-size: cover;
+            background-position: center;
+            color: #fff;
+        }
+        header {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px 0;
+            text-align: center;
+            border-bottom: 2px solid #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin: 0;
+            font-size: 36px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .status {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .status p {
+            font-size: 24px;
+            margin: 0;
+        }
+        .plaza-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .plaza {
+            width: 50px;
+            height: 50px;
+            margin: 5px;
+            border-radius: 5px;
+            text-align: center;
+            line-height: 50px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            cursor: pointer;
+        }
+        .plaza:hover {
+            transform: scale(1.1);
+        }
+        .plaza-disponible {
+            background-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+        }
+        .plaza-ocupada {
+            background-color: #ff0000;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+        }
+		.plaza-reservada {
+			background-color: #ffd700; /* Amarillo */
+			box-shadow: 0 0 10px rgba(255, 215, 0, 0.8); /* Sombra amarilla */
+		}
+        .coche {
+            font-size: 36px;
+        }
+        .arbol {
+            font-size: 36px;
+        }
+        .reservation {
+            margin-top: 20px;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .reservation input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Parking</h1>
+    </header>
+    <div class="container">
+        <div class="status">
+    		<p>Estado del Parking:</p>
+    		<p class="available">Plazas disponibles: <span id="plazas-disponibles">--</span></p>
+    		<p class="occupied">Plazas ocupadas: <span id="plazas-ocupadas">--</span></p>
+    		<p class="reserved">Plazas reservadas: <span id="plazas-reservadas">--</span></p>
+	</div>
+        <div class="plaza-container">
+            <div class="plaza plaza-disponible"><span class="arbol">🌳</span></div>
+            <div class="plaza plaza-disponible"><span class="arbol">🌳</span></div>
+            <div class="plaza plaza-disponible"><span class="arbol">🌳</span></div>
+            <div class="plaza plaza-disponible"><span class="arbol">🌳</span></div>
+            <div class="plaza plaza-disponible"><span class="arbol">🌳</span></div>
+            <div class="plaza plaza-disponible"><span class="arbol">🌳</span></div>
+            <div class="plaza plaza-disponible"><span class="arbol">🌳</span></div>
+            <div class="plaza plaza-disponible"><span class="arbol">🌳</span></div>
+            <div class="plaza plaza-disponible"><span class="arbol">🌳</span></div>
+            <div class="plaza plaza-disponible"><span class="arbol">🌳</span></div>
+        </div>
+    </div>
+
+    <div class="reservation">
+        <form id="reservation-form">
+            <input type="submit" value="Reservar plaza">
+        </form>
+    </div>
+
+    <script>
+	var ocupadas = -1
+	var reservadas = -1
+		// Hacer una solicitud HTTP GET para obtener el número de plazas reservadas
+		fetch('https://api.thingspeak.com/channels/2510239/fields/2.json?api_key=I53ATH9YS4OA3BXN&results=1')
+			.then(response => response.json())
+			.then(data => {
+				reservadas = parseInt(data.feeds[0].field2 || '0');       
+
+			// Poner el número de plazas reservadas
+				document.getElementById('plazas-reservadas').innerText = reservadas;
+			})
+			.catch(error => console.error('Error al obtener datos de plazas reservadas:', error))
+			.then( _ => {
+				// Hacer una solicitud HTTP GET para obtener el número de plazas ocupadas
+				return fetch('https://api.thingspeak.com/channels/2510239/fields/1.json?api_key=I53ATH9YS4OA3BXN&results=1')
+			})
+            .then(response => response.json())
+            .then(data => {
+                // Obtener el último valor de plazas ocupadas
+                ocupadas = parseInt(data.feeds[0].field1 || '0');
+				console.log("Ocupadas: " + ocupadas);
+				console.log("Reservadas: " + reservadas);
+                document.getElementById('plazas-ocupadas').innerText = ocupadas;
+				
+				// Calcular las plazas disponibles (en este caso, un total de 10 plazas)
+                const disponibles = 10 - ocupadas - reservadas;
+                document.getElementById('plazas-disponibles').innerText = disponibles;
+
+                // Cambiar el color de las plazas según estén ocupadas, reservadas o disponibles
+				const plazas = document.querySelectorAll('.plaza');
+				for (let i = 0; i < plazas.length; i++) {
+					if (i < ocupadas) {
+						plazas[i].classList.remove('plaza-disponible');
+						plazas[i].classList.remove('plaza-reservada'); // Remover la clase 'plaza-reservada' si está presente
+						plazas[i].classList.add('plaza-ocupada');
+						plazas[i].innerHTML = '<span class="coche">🚗</span>';
+					} else if (i < ocupadas + reservadas) {
+						plazas[i].classList.remove('plaza-disponible');
+						plazas[i].classList.add('plaza-reservada');
+						plazas[i].innerHTML = '<span class="arbol">⚠</span>';
+					} else {
+						plazas[i].classList.remove('plaza-ocupada');
+						plazas[i].classList.remove('plaza-reservada'); // Remover la clase 'plaza-reservada' si está presente
+						plazas[i].classList.add('plaza-disponible');
+						plazas[i].innerHTML = '<span class="arbol">✔</span>';
+					}
+				}
+
+            })
+            .catch(error => console.error('Error al obtener datos:', error));
+
+	
+
+        document.getElementById('reservation-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Evitar que se recargue la página
+
+            // Hacer una solicitud HTTP GET para obtener el valor actual del contador
+            fetch('https://api.thingspeak.com/channels/2510239/fields/2.json?api_key=I53ATH9YS4OA3BXN&results=1')
+                .then(response => response.json())
+                .then(data => {
+                    const currentCount = parseInt(data.feeds[0].field2 || '0'); // Obtener el valor actual del contador o 0 si no hay datos
+		    console.log("currentCount = " + currentCount);
+                    const newCount = currentCount + 1; // Incrementar el contador en 1
+		    console.log("newCount: " + newCount);
+                    // Hacer una solicitud HTTP POST para actualizar el contador en la API
+                    fetch('https://api.thingspeak.com/update?api_key=ATCU0EON0K5MW6VP&field2=' + newCount + '&field1=' + ocupadas, { method: 'GET' })
+                        .then(response => response.json())
+                        .then(data => {
+                            alert('Plaza reservada con éxito.');
+                            location.reload(); // Recargar la página para actualizar el estado del estacionamiento
+                        })
+                        .catch(error => console.error('Error al reservar plaza:', error));
+                })
+                .catch(error => console.error('Error al obtener el contador:', error));
+        });
+    </script>
+</body>
+</html>
